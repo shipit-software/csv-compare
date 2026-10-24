@@ -27,7 +27,7 @@ function readInput(filename) {
       if (length > limit) throw new CsvError('SIZE', 'Each CSV file must be at most 32 MiB.');
       chunks.push(Buffer.from(buffer.subarray(0, count)));
     }
-    try { return new TextDecoder('utf-8', { fatal: true }).decode(Buffer.concat(chunks)); }
+    try { return new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(Buffer.concat(chunks)); }
     catch { throw new CsvError('ENCODING', 'Input must contain valid UTF-8.'); }
   } catch (error) {
     if (error instanceof CsvError) throw error;

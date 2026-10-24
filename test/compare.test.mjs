@@ -85,3 +85,19 @@ test('CLI exit codes, JSON schema, safe errors and UTF-8 validation', () => {
     assert.equal(invoke(left, right, '--unknown').status, 2);
   } finally { rmSync(folder, { recursive: true, force: true }); }
 });
+
+test('CLI and library remove exactly one BOM and preserve a second header character', () => {
+  const folder = mkdtempSync(join(tmpdir(), 'csv-compare-bom-'));
+  try {
+    const before = '\uFEFF\uFEFFname,id\nx,1\n';
+    const after = '\uFEFFname,id\nx,1\n';
+    const left = join(folder, 'before.csv'), right = join(folder, 'after.csv');
+    writeFileSync(left, before); writeFileSync(right, after);
+    const expected = compare(before, after);
+    assert.equal(expected.equal, false);
+    assert.deepEqual(expected.columns, { added: ['name'], removed: ['\uFEFFname'] });
+    const result = spawnSync(process.execPath, ['src/cli.mjs', left, right, '--key', 'id', '--json'], { encoding: 'utf8' });
+    assert.equal(result.status, 1);
+    assert.deepEqual(JSON.parse(result.stdout), expected);
+  } finally { rmSync(folder, { recursive: true, force: true }); }
+});
