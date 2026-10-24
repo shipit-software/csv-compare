@@ -14,3 +14,8 @@ Current stage is local development only. Do not add a remote, create a hosted
 repository, push or publish a package without the owner's explicit review and
 approval of the concrete contents and release. Passing tests does not authorize
 publication. Keep local publication hooks installed.
+
+Keep `package.json` marked `private: true` during local development. Remove that
+block only as part of an explicitly authorized package release after review of
+the exact version and package contents. Repository publication alone does not
+authorize a package release.

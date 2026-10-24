@@ -1,6 +1,7 @@
 {
   "name": "@shipit-software/csv-compare",
   "version": "0.1.0",
+  "private": true,
   "description": "Compare CSV records by explicit keys while preserving text values",
   "type": "module",
   "license": "MIT",
