@@ -1,0 +1,14 @@
+{
+  "name": "@shipit-software/csv-compare",
+  "version": "0.1.0",
+  "description": "Compare CSV records by explicit keys while preserving text values",
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": ">=22" },
+  "bin": { "csv-compare": "src/cli.mjs" },
+  "exports": { ".": "./src/compare.mjs" },
+  "files": ["src", "README.md", "LICENSE"],
+  "homepage": "https://csvfile.tools/compare",
+  "scripts": { "test": "node --test" },
+  "publishConfig": { "access": "public" }
+}
