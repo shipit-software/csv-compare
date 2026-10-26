@@ -5,13 +5,15 @@ import { compareCsv, CsvError } from './compare.mjs';
 
 const HELP = `csv-compare 0.1.0
 Usage: csv-compare BEFORE.csv AFTER.csv --key COLUMN [--key COLUMN] [--json] [--delimiter CHAR]
+Use --key=VALUE for headers beginning with --. Use -- before dash-prefixed file paths.
 
 Compare rows by unique explicit keys. Values remain text. Row/column order is ignored.
 Exit codes: 0 equal, 1 differences, 2 invalid input or arguments.
 Reads UTF-8 files up to 32 MiB each. No files are changed. No network is used.
 `;
 const args = process.argv.slice(2);
-let json = args.includes('--json');
+const optionBoundary = args.indexOf('--');
+const json = args.slice(0, optionBoundary < 0 ? args.length : optionBoundary).includes('--json');
 function readInput(filename) {
   const limit = 32 * 1024 * 1024;
   const chunks = [];
@@ -40,10 +42,18 @@ try {
   else {
     const files = [], keys = [];
     let delimiter = ',';
+    let endOptions = false;
     for (let index = 0; index < args.length; index += 1) {
       const arg = args[index];
+      if (endOptions) { files.push(arg); continue; }
+      if (arg === '--') { endOptions = true; continue; }
       if (arg === '--json') continue;
-      if (arg === '--key' || arg === '--delimiter') {
+      if (arg.startsWith('--key=') || arg.startsWith('--delimiter=')) {
+        const separator = arg.indexOf('=');
+        const option = arg.slice(0, separator), value = arg.slice(separator + 1);
+        if (!value.length) throw new CsvError('ARGUMENT', 'Option requires a value.');
+        if (option === '--key') keys.push(value); else delimiter = value;
+      } else if (arg === '--key' || arg === '--delimiter') {
         const value = args[++index];
         if (value === undefined || value.startsWith('--')) throw new CsvError('ARGUMENT', 'Option requires a value.');
         if (arg === '--key') keys.push(value); else delimiter = value;

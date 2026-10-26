@@ -25,6 +25,11 @@ Exit codes:
 - `1`: additions, removals, or changes found.
 - `2`: invalid CSV, invalid arguments, duplicate keys, or unreadable input.
 
+Use `--key=--id` for a header whose name begins with `--`, and `--delimiter==`
+for an equals-sign separator. Put options before `--` when either input filename
+begins with a dash, for example `node src/cli.mjs --key id -- -old.csv -new.csv`.
+`--json` after `--` is a filename, not an output option.
+
 `--help` and `--version` are available without input files. JSON output contains
 `equal`, `keys`, `columns`, `rows`, and `counts`. Invalid input produces an `error`
 object with a stable code and, where known, the input side and logical record

@@ -101,3 +101,36 @@ test('CLI and library remove exactly one BOM and preserve a second header charac
     assert.deepEqual(JSON.parse(result.stdout), expected);
   } finally { rmSync(folder, { recursive: true, force: true }); }
 });
+
+
+test('syntax diagnostics identify the input side with the logical record and field', () => {
+  const valid = 'id,value\n1,ok\n';
+  const invalid = 'id,value\n1,"unclosed';
+  for (const side of ['before', 'after']) {
+    assert.throws(() => compare(side === 'before' ? invalid : valid, side === 'after' ? invalid : valid),
+      error => error.code === 'QUOTE' && error.side === side && error.row === 2 && error.column === 2);
+  }
+});
+
+test('CLI supports option-like keys, equals delimiters and dash-prefixed file paths', () => {
+  const folder = mkdtempSync(join(tmpdir(), 'csv-compare-options-'));
+  try {
+    writeFileSync(join(folder, '--before.csv'), '--id=value\n01=before\n');
+    writeFileSync(join(folder, '--after.csv'), '--id=value\n01=after\n');
+    const cli = new URL('../src/cli.mjs', import.meta.url);
+    const result = spawnSync(process.execPath, [cli.pathname, '--json', '--key=--id', '--delimiter==', '--', '--before.csv', '--after.csv'],
+      { cwd: folder, encoding: 'utf8' });
+    assert.equal(result.status, 1);
+    assert.deepEqual(JSON.parse(result.stdout).rows.changed,
+      [{ key: ['01'], changes: [{ column: 'value', before: 'before', after: 'after' }] }]);
+    writeFileSync(join(folder, '--json'), 'id\n1\n');
+    writeFileSync(join(folder, 'normal.csv'), 'id\n1\n');
+    const plain = spawnSync(process.execPath, [cli.pathname, '--key', 'id', '--', '--json', 'normal.csv'],
+      { cwd: folder, encoding: 'utf8' });
+    assert.equal(plain.status, 0);
+    assert.match(plain.stdout, /^CSV records are equal/);
+    const malformed = spawnSync(process.execPath, [cli.pathname, '--key=', '--json'], { encoding: 'utf8' });
+    assert.equal(malformed.status, 2);
+    assert.equal(JSON.parse(malformed.stdout).error.code, 'ARGUMENT');
+  } finally { rmSync(folder, { recursive: true, force: true }); }
+});

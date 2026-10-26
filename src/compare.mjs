@@ -47,7 +47,12 @@ export function parseCsv(input, { delimiter = ',' } = {}) {
 }
 
 function table(text, options, side) {
-  const rows = parseCsv(text, options);
+  let rows;
+  try { rows = parseCsv(text, options); }
+  catch (error) {
+    if (error instanceof CsvError) error.side = side;
+    throw error;
+  }
   const header = rows.shift();
   const seen = new Set();
   for (let column = 0; column < header.length; column += 1) {
