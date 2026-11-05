@@ -16,8 +16,15 @@ node src/cli.mjs before.csv after.csv --key account --key item --json
 node src/cli.mjs before.tsv after.tsv --key id --delimiter "$(printf '\t')"
 ```
 
-The proposed package name in `package.json` has not been reserved or published.
-There is no registry installation command yet.
+To install a published version:
+
+```sh
+npm install --global @shipit-software/csv-compare
+csv-compare before.csv after.csv --key id
+```
+
+See the [source repository](https://github.com/shipit-software/csv-compare)
+for the code and issue tracker.
 
 Exit codes:
 
